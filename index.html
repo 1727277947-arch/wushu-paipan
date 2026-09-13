@@ -2,8 +2,8 @@
 <html lang="zh-CN">
 <head>
 <meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>传统文化娱乐 · 五术排盘</title>
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+<title>五术排盘</title>
 <link rel="stylesheet" href="./assets/style.css">
 <link rel="manifest" href="./manifest.webmanifest">
 <link rel="icon" type="image/svg+xml" href="./assets/icon.svg">
@@ -14,21 +14,23 @@
 <meta name="apple-mobile-web-app-title" content="五术排盘">
 </head>
 <body>
-<div class="app">
-  <header class="topbar">
-    <div class="brand">
-      <span class="brand-mark">☯</span>
-      <div class="brand-text">
-        <h1>五术排盘</h1>
-        <p>传统文化娱乐 · 命理与卜筮</p>
-      </div>
+<div class="app" id="app">
+  <header class="appbar">
+    <div class="appbar-brand">
+      <span class="appbar-mark">☯</span>
+      <h1 class="appbar-title" id="appTitle">五术排盘</h1>
     </div>
-    <nav class="tabs" id="tabs" role="tablist"></nav>
+    <button type="button" class="icon-btn" id="copyBtn">复制</button>
   </header>
 
-  <main class="stage">
+  <nav class="tabs" id="tabs" role="tablist"></nav>
+
+  <main class="content" id="content">
     <section class="panel input-panel" id="inputPanel">
-      <h2 class="panel-title" id="panelTitle">输入信息</h2>
+      <div class="panel-head">
+        <h2 class="panel-title" id="panelTitle">输入信息</h2>
+        <button type="button" class="link-btn" id="collapseBtn">收起</button>
+      </div>
       <form id="inputForm" class="form-grid" autocomplete="off"></form>
       <div class="actions">
         <button type="button" class="btn primary" id="castBtn">开始排盘</button>
@@ -39,25 +41,28 @@
     </section>
 
     <section class="panel result-panel" id="resultPanel">
-      <div class="result-head">
-        <h2 class="panel-title">排盘结果</h2>
-        <button type="button" class="btn ghost small" id="copyBtn">复制文本</button>
-      </div>
       <div id="result" class="result-body">
         <div class="empty-state">
           <div class="empty-icon">䷀</div>
-          <p>选好上方术数，填好信息后点「开始排盘」</p>
+          <p>选好下方术数，填好信息后点「开始排盘」</p>
           <p class="empty-sub">共收录 命理解读 · 八字 · 六爻 · 大六壬 · 紫微斗数 · 奇门遁甲 · 解梦</p>
         </div>
       </div>
     </section>
-  </main>
 
-  <footer class="foot">
-    <p>本工具为传统文化研究与娱乐用途，所有推算基于公开的传统术数算法。</p>
-    <p class="foot-sub">节气与农历采用天文算法实时推算，误差在分钟级。</p>
-  </footer>
+    <p class="foot">传统文化研究与娱乐用途，推算基于公开术数算法，不构成任何建议。</p>
+  </main>
 </div>
+
+<div class="sheet-wrap" id="sheetWrap" hidden>
+  <div class="sheet-mask" id="sheetMask"></div>
+  <div class="sheet" role="dialog" aria-label="更多功能">
+    <div class="sheet-handle"></div>
+    <h3 class="sheet-title">更多功能</h3>
+    <div class="sheet-list" id="sheetList"></div>
+  </div>
+</div>
+
 <script type="module" src="./src/app.js"></script>
 </body>
 </html>

@@ -2,8 +2,8 @@
 <html lang="zh-CN">
 <head>
 <meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>传统文化娱乐 · 五术排盘</title>
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+<title>五术排盘</title>
 <style>
 /* 传统文化娱乐 · 五术排盘 样式 */
 :root {
@@ -52,115 +52,297 @@ body::before {
     repeating-linear-gradient(0deg, transparent 0 3px, rgba(28,25,23,.008) 3px 4px);
 }
 
+/* ==================== App 外壳 ==================== */
 .app {
   position: relative;
   z-index: 1;
+  display: flex;
+  flex-direction: column;
+  height: 100vh;
+  height: 100dvh;
   max-width: 1240px;
   margin: 0 auto;
-  padding: 28px 24px 56px;
 }
 
-/* ---------- 顶栏 ---------- */
-.topbar {
+/* ---------- 顶栏（紧凑） ---------- */
+.appbar {
+  flex: 0 0 auto;
   display: flex;
   align-items: center;
   justify-content: space-between;
-  gap: 24px;
-  flex-wrap: wrap;
-  padding-bottom: 18px;
+  gap: 10px;
+  min-height: 52px;
+  padding: 0 14px;
+  padding-top: env(safe-area-inset-top, 0px);
+  background: rgba(250, 248, 244, .94);
+  backdrop-filter: blur(12px);
   border-bottom: 1px solid var(--line);
+  z-index: 20;
 }
-
-.brand { display: flex; align-items: center; gap: 14px; }
-
-.brand-mark {
-  font-size: 34px;
-  line-height: 1;
-  color: var(--cinnabar);
-  animation: spin 26s linear infinite;
-}
-@keyframes spin { to { transform: rotate(360deg); } }
-
-.brand-text h1 {
+.appbar-brand { display: flex; align-items: center; gap: 8px; min-width: 0; }
+.appbar-mark { flex: 0 0 auto; font-size: 20px; line-height: 1; color: var(--cinnabar); }
+.appbar-title {
   margin: 0;
   font-family: var(--font-serif);
-  font-size: 26px;
+  font-size: 17px;
   font-weight: 600;
-  letter-spacing: .16em;
-}
-.brand-text p {
-  margin: 2px 0 0;
-  font-size: 12px;
-  color: var(--ink-faint);
-  letter-spacing: .18em;
+  letter-spacing: .1em;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
 }
 
-.tabs { display: flex; gap: 6px; flex-wrap: wrap; }
-
-.tab {
+.icon-btn {
   appearance: none;
+  flex: 0 0 auto;
   border: 1px solid var(--line);
   background: var(--paper-2);
   color: var(--ink-soft);
-  font-family: var(--font-serif);
-  font-size: 15px;
-  letter-spacing: .1em;
-  padding: 8px 16px;
   border-radius: 999px;
+  min-height: 34px;
+  padding: 0 15px;
+  font-size: 12.5px;
+  font-family: var(--font-serif);
+  letter-spacing: .08em;
   cursor: pointer;
-  transition: all .16s ease;
+  transition: background .15s, border-color .15s;
 }
-.tab:hover { border-color: var(--line-strong); color: var(--ink); transform: translateY(-1px); }
-.tab.active {
-  background: var(--cinnabar);
-  border-color: var(--cinnabar);
-  color: #fff;
-  box-shadow: 0 4px 14px -6px rgba(168,52,42,.6);
-}
-.tab .tab-sub {
-  display: block;
-  font-family: var(--font-sans);
-  font-size: 10px;
-  letter-spacing: .06em;
-  opacity: .7;
-}
+.icon-btn:active { background: var(--paper-3); }
 
-/* ---------- 布局 ---------- */
-.stage {
-  display: grid;
-  grid-template-columns: minmax(320px, 380px) minmax(0, 1fr);
-  gap: 22px;
-  margin-top: 22px;
-  align-items: start;
+/* ---------- 底部导航栏 ---------- */
+.tabs {
+  flex: 0 0 auto;
+  display: flex;
+  position: fixed;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  z-index: 30;
+  background: rgba(250, 248, 244, .97);
+  backdrop-filter: blur(12px);
+  border-top: 1px solid var(--line);
+  padding-bottom: env(safe-area-inset-bottom, 0px);
+}
+.tab {
+  appearance: none;
+  flex: 1 1 0;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 1px;
+  min-height: 58px;
+  padding: 7px 3px;
+  border: none;
+  background: none;
+  color: var(--ink-faint);
+  font-family: var(--font-serif);
+  cursor: pointer;
+  transition: color .15s;
+}
+.tab .tab-icon { font-size: 18px; line-height: 1.1; }
+.tab .tab-label { font-size: 10.5px; letter-spacing: .04em; }
+.tab.active { color: var(--cinnabar); }
+.tab.active .tab-icon { transform: translateY(-1px); }
+.tab:active .tab-icon { transform: scale(.9); }
+
+/* ---------- 内容区（独立滚动） ---------- */
+.content {
+  flex: 1 1 auto;
+  min-height: 0;
+  overflow-y: auto;
+  -webkit-overflow-scrolling: touch;
+  overscroll-behavior: contain;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  padding: 12px 14px calc(74px + env(safe-area-inset-bottom, 0px));
 }
 
 .panel {
   background: #fff;
   border: 1px solid var(--line);
-  border-radius: var(--radius);
-  box-shadow: var(--shadow);
-  padding: 20px 22px;
+  border-radius: 12px;
+  box-shadow: 0 1px 2px rgba(28, 25, 23, .04);
+  padding: 14px 16px 16px;
+}
+
+.panel-head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+  margin-bottom: 12px;
+}
+.link-btn {
+  appearance: none;
+  flex: 0 0 auto;
+  border: none;
+  background: none;
+  color: var(--ink-faint);
+  font-size: 12.5px;
+  font-family: var(--font-serif);
+  letter-spacing: .06em;
+  padding: 6px 2px;
+  cursor: pointer;
+}
+.link-btn:active { color: var(--cinnabar); }
+
+.panel.collapsed .form-grid,
+.panel.collapsed .actions,
+.panel.collapsed .hint { display: none; }
+.panel.collapsed .panel-head { margin-bottom: 0; }
+
+.foot {
+  margin: 4px 0 0;
+  text-align: center;
+  color: var(--ink-faint);
+  font-size: 11px;
+  line-height: 1.7;
 }
 
 .panel-title {
-  margin: 0 0 14px;
+  margin: 0;
   font-family: var(--font-serif);
-  font-size: 17px;
+  font-size: 16px;
   font-weight: 600;
   letter-spacing: .12em;
   color: var(--ink);
-  padding-left: 12px;
+  padding-left: 11px;
   position: relative;
 }
 .panel-title::before {
   content: '';
   position: absolute;
-  left: 0; top: .28em; bottom: .28em;
+  left: 0;
+  top: .28em;
+  bottom: .28em;
   width: 3px;
   border-radius: 2px;
   background: var(--cinnabar);
 }
 
+/* ---------- 更多功能弹层 ---------- */
+.sheet-wrap { position: fixed; inset: 0; z-index: 60; }
+.sheet-mask {
+  position: absolute;
+  inset: 0;
+  background: rgba(28, 25, 23, .34);
+  opacity: 0;
+  transition: opacity .2s;
+}
+.sheet-wrap.open .sheet-mask { opacity: 1; }
+.sheet {
+  position: absolute;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: var(--paper);
+  border-radius: 16px 16px 0 0;
+  padding: 8px 14px calc(20px + env(safe-area-inset-bottom, 0px));
+  transform: translateY(100%);
+  transition: transform .24s cubic-bezier(.2, .8, .2, 1);
+  box-shadow: 0 -8px 30px -10px rgba(28, 25, 23, .3);
+}
+.sheet-wrap.open .sheet { transform: translateY(0); }
+.sheet-handle {
+  width: 38px;
+  height: 4px;
+  border-radius: 999px;
+  background: var(--line-strong);
+  margin: 4px auto 12px;
+}
+.sheet-title {
+  margin: 0 0 10px;
+  font-family: var(--font-serif);
+  font-size: 13px;
+  font-weight: 600;
+  letter-spacing: .12em;
+  color: var(--ink-faint);
+}
+.sheet-list { display: flex; flex-direction: column; gap: 8px; }
+.sheet-item {
+  appearance: none;
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  width: 100%;
+  min-height: 58px;
+  padding: 10px 14px;
+  border: 1px solid var(--line);
+  border-radius: 10px;
+  background: #fff;
+  color: var(--ink);
+  text-align: left;
+  cursor: pointer;
+}
+.sheet-item.active { border-color: var(--cinnabar); background: rgba(168, 52, 42, .05); }
+.si-icon {
+  flex: 0 0 auto;
+  width: 34px;
+  height: 34px;
+  display: grid;
+  place-items: center;
+  border-radius: 9px;
+  background: var(--paper-2);
+  color: var(--cinnabar);
+  font-family: var(--font-serif);
+  font-size: 16px;
+}
+.sheet-item.active .si-icon { background: var(--cinnabar); color: #fff; }
+.si-text { display: flex; flex-direction: column; min-width: 0; }
+.si-text b { font-family: var(--font-serif); font-size: 15px; font-weight: 600; letter-spacing: .06em; }
+.si-text i {
+  font-style: normal;
+  font-size: 11px;
+  color: var(--ink-faint);
+  letter-spacing: .06em;
+}
+
+/* ==================== 宽屏：回到普通网页布局 ==================== */
+@media (min-width: 760px) {
+  .app { height: auto; min-height: 100vh; padding-bottom: 40px; }
+  .appbar { min-height: 60px; padding: 0 24px; }
+  .appbar-title { font-size: 19px; }
+
+  .tabs {
+    position: static;
+    flex-wrap: wrap;
+    justify-content: center;
+    gap: 6px;
+    background: none;
+    backdrop-filter: none;
+    border-top: none;
+    border-bottom: 1px solid var(--line);
+    padding: 0 24px 14px;
+  }
+  .tab {
+    flex: 0 0 auto;
+    flex-direction: row;
+    gap: 7px;
+    min-height: 38px;
+    padding: 6px 17px;
+    border: 1px solid var(--line);
+    border-radius: 999px;
+    background: var(--paper-2);
+    transition: all .16s ease;
+  }
+  .tab .tab-icon { font-size: 14px; }
+  .tab .tab-label { font-size: 14px; letter-spacing: .1em; }
+  .tab:hover { border-color: var(--line-strong); color: var(--ink); transform: translateY(-1px); }
+  .tab.active {
+    background: var(--cinnabar);
+    border-color: var(--cinnabar);
+    color: #fff;
+    box-shadow: 0 4px 14px -6px rgba(168, 52, 42, .6);
+  }
+
+  .content { overflow: visible; padding: 22px 24px 0; gap: 22px; }
+  .panel { padding: 20px 22px 22px; }
+  .panel-title { font-size: 17px; }
+  .foot { font-size: 11.5px; }
+  .sheet-wrap { display: none; }
+}
 /* ---------- 表单 ---------- */
 .form-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 12px 14px; }
 
@@ -576,37 +758,31 @@ body::before {
 
 /* 底栏 */
 .foot {
-  margin-top: 34px;
-  padding-top: 16px;
-  border-top: 1px solid var(--line);
+  margin: 4px 0 0;
   text-align: center;
   color: var(--ink-faint);
-  font-size: 12px;
+  font-size: 11px;
+  line-height: 1.7;
 }
-.foot p { margin: 3px 0; }
-.foot-sub { font-size: 11.5px; letter-spacing: .06em; }
 
 /* 响应式 */
 @media (max-width: 900px) {
-  .stage { grid-template-columns: 1fr; }
-  .app { padding: 20px 14px 44px; }
   .gua-grid { grid-template-columns: 1fr; }
   .gua-arrow { transform: rotate(90deg); justify-self: center; }
   .ziwei-grid { grid-template-columns: repeat(2, 1fr); }
   .qimen-grid { grid-template-columns: repeat(3, 1fr); }
-  .topbar { flex-direction: column; align-items: flex-start; }
 }
 
 @media (max-width: 560px) {
   .form-grid { grid-template-columns: 1fr; }
   .qimen-grid { grid-template-columns: repeat(2, 1fr); }
-  .brand-text h1 { font-size: 22px; }
 }
 
 /* 打印 */
 @media print {
-  body::before, .tabs, .input-panel, .foot, #copyBtn { display: none; }
-  .stage { grid-template-columns: 1fr; }
+  body::before, .tabs, .appbar, .input-panel, .foot { display: none; }
+  .app { height: auto; }
+  .content { overflow: visible; padding: 0; }
   .panel { box-shadow: none; border-color: #ccc; }
 }
 /* ==================== 命理解读 ==================== */
@@ -913,12 +1089,14 @@ body::before {
 /* ============ 触屏：把可点区域加大到 44px 以上 ============ */
 @media (hover: none), (max-width: 560px) {
   .btn { min-height: 46px; padding: 12px 18px; font-size: 14.5px; }
+  .icon-btn { min-height: 44px; padding: 0 18px; font-size: 13.5px; }
+  .link-btn { min-height: 44px; padding: 10px 4px; font-size: 13px; }
+  .appbar { min-height: 56px; }
   .btn.small { min-height: 44px; padding: 10px 14px; font-size: 13px; }
   .field input, .field select { min-height: 46px; font-size: 16px; }
   .field textarea { font-size: 15px; }
   .field label { font-size: 13px; }
   .seg label { min-height: 46px; padding: 11px 0; font-size: 15px; }
-  .tab { min-height: 46px; padding: 10px 16px; }
   .sample-chip { min-height: 38px; padding: 8px 14px; font-size: 12.5px; }
   .sc-btn { min-height: 54px; }
   .nar-text { font-size: 15px; line-height: 1.95; }
@@ -934,21 +1112,23 @@ body::before {
 <meta name="apple-mobile-web-app-title" content="五术排盘">
 </head>
 <body>
-<div class="app">
-  <header class="topbar">
-    <div class="brand">
-      <span class="brand-mark">☯</span>
-      <div class="brand-text">
-        <h1>五术排盘</h1>
-        <p>传统文化娱乐 · 命理与卜筮</p>
-      </div>
+<div class="app" id="app">
+  <header class="appbar">
+    <div class="appbar-brand">
+      <span class="appbar-mark">☯</span>
+      <h1 class="appbar-title" id="appTitle">五术排盘</h1>
     </div>
-    <nav class="tabs" id="tabs" role="tablist"></nav>
+    <button type="button" class="icon-btn" id="copyBtn">复制</button>
   </header>
 
-  <main class="stage">
+  <nav class="tabs" id="tabs" role="tablist"></nav>
+
+  <main class="content" id="content">
     <section class="panel input-panel" id="inputPanel">
-      <h2 class="panel-title" id="panelTitle">输入信息</h2>
+      <div class="panel-head">
+        <h2 class="panel-title" id="panelTitle">输入信息</h2>
+        <button type="button" class="link-btn" id="collapseBtn">收起</button>
+      </div>
       <form id="inputForm" class="form-grid" autocomplete="off"></form>
       <div class="actions">
         <button type="button" class="btn primary" id="castBtn">开始排盘</button>
@@ -959,25 +1139,28 @@ body::before {
     </section>
 
     <section class="panel result-panel" id="resultPanel">
-      <div class="result-head">
-        <h2 class="panel-title">排盘结果</h2>
-        <button type="button" class="btn ghost small" id="copyBtn">复制文本</button>
-      </div>
       <div id="result" class="result-body">
         <div class="empty-state">
           <div class="empty-icon">䷀</div>
-          <p>选好上方术数，填好信息后点「开始排盘」</p>
+          <p>选好下方术数，填好信息后点「开始排盘」</p>
           <p class="empty-sub">共收录 命理解读 · 八字 · 六爻 · 大六壬 · 紫微斗数 · 奇门遁甲 · 解梦</p>
         </div>
       </div>
     </section>
-  </main>
 
-  <footer class="foot">
-    <p>本工具为传统文化研究与娱乐用途，所有推算基于公开的传统术数算法。</p>
-    <p class="foot-sub">节气与农历采用天文算法实时推算，误差在分钟级。</p>
-  </footer>
+    <p class="foot">传统文化研究与娱乐用途，推算基于公开术数算法，不构成任何建议。</p>
+  </main>
 </div>
+
+<div class="sheet-wrap" id="sheetWrap" hidden>
+  <div class="sheet-mask" id="sheetMask"></div>
+  <div class="sheet" role="dialog" aria-label="更多功能">
+    <div class="sheet-handle"></div>
+    <h3 class="sheet-title">更多功能</h3>
+    <div class="sheet-list" id="sheetList"></div>
+  </div>
+</div>
+
 <script>
 (() => {
   // src/core/lunar.js
@@ -4566,6 +4749,7 @@ body::before {
     {
       id: "interpret",
       name: "命理解读",
+      short: "命理",
       sub: "论命 · 走向",
       title: "命理解读 · 人生论断",
       hint: "由八字推出命局类型、财禄官运、一生行运走势，以及能否转运与何时转运。请填出生年月日与时辰。",
@@ -4577,6 +4761,7 @@ body::before {
     {
       id: "bazi",
       name: "八字",
+      short: "八字",
       sub: "四柱 · 命",
       title: "八字排盘 · 四柱命理",
       hint: "以立春换年、以十二节换月，排出年月日时四柱、十神与大运。",
@@ -4588,6 +4773,7 @@ body::before {
     {
       id: "liuyao",
       name: "六爻",
+      short: "六爻",
       sub: "纳甲 · 事",
       title: "六爻排盘 · 纳甲筮法",
       hint: "三枚铜钱摇六次成卦，或按时间起卦；排出纳甲、六亲、六神、世应与变卦。起卦时刻已默认当下，无需改动。",
@@ -4599,6 +4785,7 @@ body::before {
     {
       id: "liuren",
       name: "大六壬",
+      short: "六壬",
       sub: "四课 · 三传",
       title: "大六壬排盘 · 四课三传",
       hint: "术数界公认的卜筮巅峰。以月将加时起天地盘，布四课、取三传、配十二天将。时刻已默认当下。",
@@ -4610,6 +4797,7 @@ body::before {
     {
       id: "ziwei",
       name: "紫微斗数",
+      short: "紫微",
       sub: "星盘 · 命",
       title: "紫微斗数排盘 · 十二宫",
       hint: "以生月生时定命身宫与五行局，安十四主星、辅星与四化，分十二宫论命。",
@@ -4621,6 +4809,7 @@ body::before {
     {
       id: "qimen",
       name: "奇门遁甲",
+      short: "奇门",
       sub: "时家 · 择时",
       title: "奇门遁甲排盘 · 时家转盘",
       hint: "按节气定阴阳遁局数，布三奇六仪、九星、八门、八神，用于择时布局。时刻已默认当下，也可改成要择的时间。",
@@ -4632,6 +4821,7 @@ body::before {
     {
       id: "jiemeng",
       name: "解梦",
+      short: "解梦",
       sub: "梦象 · 吉凶",
       title: "解梦 · 周公梦象",
       hint: "把梦讲一遍，拆出梦中的「象」，依五行象义断吉凶，并给出可照做的建议。做梦时刻已默认当下。",
@@ -4781,7 +4971,7 @@ body::before {
   function buildForm() {
     const form = $("inputForm");
     form.innerHTML = current.fields.map(fieldHtml).join("");
-    $("panelTitle").textContent = current.title;
+    $("panelTitle").textContent = "输入条件";
     $("formHint").textContent = current.hint;
     const isBirth = current.fields.includes("birth");
     if (isBirth || current.fields.includes("moment")) wireDate(isBirth);
@@ -5075,37 +5265,104 @@ body::before {
     const dpIdx = dayPillarIndex(dt.year, dt.month, dt.day);
     return buildQimen(dt.date, { termName, dayJiaziIdx: dpIdx });
   }
+  var NAV_MAIN = ["interpret", "bazi", "liuyao", "ziwei"];
+  var NAV_MORE = ["liuren", "qimen", "jiemeng"];
+  function iconOf(id) {
+    return {
+      interpret: "命",
+      bazi: "八",
+      liuyao: "爻",
+      liuren: "壬",
+      ziwei: "紫",
+      qimen: "奇",
+      jiemeng: "梦"
+    }[id] || "☯";
+  }
+  function renderNav() {
+    const inMore = NAV_MORE.includes(current.id);
+    const items = NAV_MAIN.map((id) => {
+      const s = SYSTEMS.find((x) => x.id === id);
+      return `<button class="tab${s.id === current.id ? " active" : ""}" data-id="${s.id}" role="tab">
+      <span class="tab-icon">${iconOf(s.id)}</span>
+      <span class="tab-label">${s.short}</span>
+    </button>`;
+    });
+    items.push(`<button class="tab${inMore ? " active" : ""}" data-id="__more" role="tab">
+    <span class="tab-icon">⋯</span>
+    <span class="tab-label">更多</span>
+  </button>`);
+    $("tabs").innerHTML = items.join("");
+    $("tabs").querySelectorAll(".tab").forEach((btn) => {
+      btn.addEventListener("click", () => {
+        if (btn.dataset.id === "__more") {
+          openSheet();
+          return;
+        }
+        switchTo(btn.dataset.id);
+      });
+    });
+  }
+  function openSheet() {
+    const wrap = $("sheetWrap");
+    $("sheetList").innerHTML = NAV_MORE.map((id) => {
+      const s = SYSTEMS.find((x) => x.id === id);
+      return `<button class="sheet-item${s.id === current.id ? " active" : ""}" data-id="${s.id}">
+      <span class="si-icon">${iconOf(s.id)}</span>
+      <span class="si-text"><b>${s.name}</b><i>${s.sub}</i></span>
+    </button>`;
+    }).join("");
+    $("sheetList").querySelectorAll(".sheet-item").forEach((b) => {
+      b.addEventListener("click", () => {
+        closeSheet();
+        switchTo(b.dataset.id);
+      });
+    });
+    wrap.hidden = false;
+    requestAnimationFrame(() => wrap.classList.add("open"));
+  }
+  function closeSheet() {
+    const wrap = $("sheetWrap");
+    if (wrap.hidden) return;
+    wrap.classList.remove("open");
+    setTimeout(() => {
+      wrap.hidden = true;
+    }, 220);
+  }
+  function emptyStateHtml() {
+    return `<div class="empty-state">
+    <div class="empty-icon">${iconOf(current.id)}</div>
+    <p>${current.title}</p>
+    <p class="empty-sub">${current.hint}</p>
+  </div>`;
+  }
+  function switchTo(id) {
+    const next = SYSTEMS.find((s) => s.id === id);
+    if (!next) return;
+    current = next;
+    lastResult = null;
+    $("appTitle").textContent = current.name;
+    renderNav();
+    buildForm();
+    $("result").innerHTML = emptyStateHtml();
+    setCollapsed(false);
+    $("content").scrollTop = 0;
+  }
+  function setCollapsed(v) {
+    $("inputPanel").classList.toggle("collapsed", v);
+    $("collapseBtn").textContent = v ? "改条件" : "收起";
+  }
   async function doCast() {
     try {
       $("formHint").textContent = current.hint;
       const result = current.cast();
       lastResult = result;
       $("result").innerHTML = current.render(result);
+      setCollapsed(true);
+      $("resultPanel").scrollIntoView({ behavior: "smooth", block: "start" });
     } catch (err) {
       $("result").innerHTML = `<div class="empty-state"><div class="empty-icon">⚠</div><p>${err.message || "排盘失败，请检查输入"}</p></div>`;
+      setCollapsed(false);
     }
-  }
-  function renderTabs() {
-    $("tabs").innerHTML = SYSTEMS.map((s) => `
-    <button class="tab${s.id === current.id ? " active" : ""}" data-id="${s.id}" role="tab">
-      ${s.name}<span class="tab-sub">${s.sub}</span>
-    </button>`).join("");
-    $("tabs").querySelectorAll(".tab").forEach((btn) => {
-      btn.addEventListener("click", () => {
-        current = SYSTEMS.find((s) => s.id === btn.dataset.id);
-        lastResult = null;
-        renderTabs();
-        buildForm();
-        $("result").innerHTML = `<div class="empty-state">
-        <div class="empty-icon">${iconOf(current.id)}</div>
-        <p>${current.title}</p>
-        <p class="empty-sub">${current.hint}</p>
-      </div>`;
-      });
-    });
-  }
-  function iconOf(id) {
-    return { interpret: "论断", bazi: "干支", liuyao: "䷀", liuren: "壬", ziwei: "星", qimen: "奇", jiemeng: "梦" }[id] || "☯";
   }
   function randomize() {
     if (current.fields.includes("birth")) {
@@ -5120,9 +5377,10 @@ body::before {
       formState.moment = null;
       buildForm();
     }
-    if ($("f-dream")) {
-      $("f-dream").value = DREAM_SAMPLES[Math.floor(Math.random() * DREAM_SAMPLES.length)];
-      formState.dream = $("f-dream").value;
+    const dreamEl = $("f-dream");
+    if (dreamEl) {
+      dreamEl.value = DREAM_SAMPLES[Math.floor(Math.random() * DREAM_SAMPLES.length)];
+      formState.dream = dreamEl.value;
     }
   }
   function setNow() {
@@ -5134,12 +5392,21 @@ body::before {
     }
     buildForm();
   }
+  var COPY_LABEL = "复制";
   function init() {
-    renderTabs();
+    $("appTitle").textContent = current.name;
+    renderNav();
     buildForm();
     $("castBtn").addEventListener("click", doCast);
     $("randomBtn").addEventListener("click", randomize);
     $("nowBtn").addEventListener("click", setNow);
+    $("collapseBtn").addEventListener("click", () => {
+      setCollapsed(!$("inputPanel").classList.contains("collapsed"));
+    });
+    $("sheetMask").addEventListener("click", closeSheet);
+    document.addEventListener("keydown", (e) => {
+      if (e.key === "Escape") closeSheet();
+    });
     $("inputForm").addEventListener("submit", (e) => {
       e.preventDefault();
       doCast();
@@ -5154,14 +5421,14 @@ body::before {
       if (!lastResult) {
         $("copyBtn").textContent = "暂无结果";
         setTimeout(() => {
-          $("copyBtn").textContent = "复制文本";
+          $("copyBtn").textContent = COPY_LABEL;
         }, 1200);
         return;
       }
       const ok = await copyText(current.text(lastResult));
-      $("copyBtn").textContent = ok ? "已复制 ✓" : "复制失败";
+      $("copyBtn").textContent = ok ? "已复制" : "失败";
       setTimeout(() => {
-        $("copyBtn").textContent = "复制文本";
+        $("copyBtn").textContent = COPY_LABEL;
       }, 1400);
     });
   }

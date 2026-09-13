@@ -24,6 +24,7 @@ const SYSTEMS = [
   {
     id: 'interpret',
     name: '命理解读',
+    short: '命理',
     sub: '论命 · 走向',
     title: '命理解读 · 人生论断',
     hint: '由八字推出命局类型、财禄官运、一生行运走势，以及能否转运与何时转运。请填出生年月日与时辰。',
@@ -36,6 +37,7 @@ const SYSTEMS = [
   {
     id: 'bazi',
     name: '八字',
+    short: '八字',
     sub: '四柱 · 命',
     title: '八字排盘 · 四柱命理',
     hint: '以立春换年、以十二节换月，排出年月日时四柱、十神与大运。',
@@ -47,6 +49,7 @@ const SYSTEMS = [
   {
     id: 'liuyao',
     name: '六爻',
+    short: '六爻',
     sub: '纳甲 · 事',
     title: '六爻排盘 · 纳甲筮法',
     hint: '三枚铜钱摇六次成卦，或按时间起卦；排出纳甲、六亲、六神、世应与变卦。起卦时刻已默认当下，无需改动。',
@@ -58,6 +61,7 @@ const SYSTEMS = [
   {
     id: 'liuren',
     name: '大六壬',
+    short: '六壬',
     sub: '四课 · 三传',
     title: '大六壬排盘 · 四课三传',
     hint: '术数界公认的卜筮巅峰。以月将加时起天地盘，布四课、取三传、配十二天将。时刻已默认当下。',
@@ -69,6 +73,7 @@ const SYSTEMS = [
   {
     id: 'ziwei',
     name: '紫微斗数',
+    short: '紫微',
     sub: '星盘 · 命',
     title: '紫微斗数排盘 · 十二宫',
     hint: '以生月生时定命身宫与五行局，安十四主星、辅星与四化，分十二宫论命。',
@@ -80,6 +85,7 @@ const SYSTEMS = [
   {
     id: 'qimen',
     name: '奇门遁甲',
+    short: '奇门',
     sub: '时家 · 择时',
     title: '奇门遁甲排盘 · 时家转盘',
     hint: '按节气定阴阳遁局数，布三奇六仪、九星、八门、八神，用于择时布局。时刻已默认当下，也可改成要择的时间。',
@@ -92,6 +98,7 @@ const SYSTEMS = [
   {
     id: 'jiemeng',
     name: '解梦',
+    short: '解梦',
     sub: '梦象 · 吉凶',
     title: '解梦 · 周公梦象',
     hint: '把梦讲一遍，拆出梦中的「象」，依五行象义断吉凶，并给出可照做的建议。做梦时刻已默认当下。',
@@ -251,7 +258,7 @@ function fieldHtml(field) {
 function buildForm() {
   const form = $('inputForm');
   form.innerHTML = current.fields.map(fieldHtml).join('');
-  $('panelTitle').textContent = current.title;
+  $('panelTitle').textContent = '输入条件';
   $('formHint').textContent = current.hint;
 
   const isBirth = current.fields.includes('birth');
@@ -550,7 +557,93 @@ function castQimen() {
   return buildQimen(dt.date, { termName, dayJiaziIdx: dpIdx });
 }
 
-/* ---------------- 交互 ---------------- */
+/* ---------------- 导航 ---------------- */
+
+/** 底部导航只放最常用的四项，其余收进「更多」 */
+const NAV_MAIN = ['interpret', 'bazi', 'liuyao', 'ziwei'];
+const NAV_MORE = ['liuren', 'qimen', 'jiemeng'];
+
+function iconOf(id) {
+  return {
+    interpret: '命', bazi: '八', liuyao: '爻',
+    liuren: '壬', ziwei: '紫', qimen: '奇', jiemeng: '梦',
+  }[id] || '☯';
+}
+
+function renderNav() {
+  const inMore = NAV_MORE.includes(current.id);
+  const items = NAV_MAIN.map((id) => {
+    const s = SYSTEMS.find((x) => x.id === id);
+    return `<button class="tab${s.id === current.id ? ' active' : ''}" data-id="${s.id}" role="tab">
+      <span class="tab-icon">${iconOf(s.id)}</span>
+      <span class="tab-label">${s.short}</span>
+    </button>`;
+  });
+  items.push(`<button class="tab${inMore ? ' active' : ''}" data-id="__more" role="tab">
+    <span class="tab-icon">⋯</span>
+    <span class="tab-label">更多</span>
+  </button>`);
+
+  $('tabs').innerHTML = items.join('');
+  $('tabs').querySelectorAll('.tab').forEach((btn) => {
+    btn.addEventListener('click', () => {
+      if (btn.dataset.id === '__more') { openSheet(); return; }
+      switchTo(btn.dataset.id);
+    });
+  });
+}
+
+function openSheet() {
+  const wrap = $('sheetWrap');
+  $('sheetList').innerHTML = NAV_MORE.map((id) => {
+    const s = SYSTEMS.find((x) => x.id === id);
+    return `<button class="sheet-item${s.id === current.id ? ' active' : ''}" data-id="${s.id}">
+      <span class="si-icon">${iconOf(s.id)}</span>
+      <span class="si-text"><b>${s.name}</b><i>${s.sub}</i></span>
+    </button>`;
+  }).join('');
+  $('sheetList').querySelectorAll('.sheet-item').forEach((b) => {
+    b.addEventListener('click', () => { closeSheet(); switchTo(b.dataset.id); });
+  });
+  wrap.hidden = false;
+  requestAnimationFrame(() => wrap.classList.add('open'));
+}
+
+function closeSheet() {
+  const wrap = $('sheetWrap');
+  if (wrap.hidden) return;
+  wrap.classList.remove('open');
+  setTimeout(() => { wrap.hidden = true; }, 220);
+}
+
+function emptyStateHtml() {
+  return `<div class="empty-state">
+    <div class="empty-icon">${iconOf(current.id)}</div>
+    <p>${current.title}</p>
+    <p class="empty-sub">${current.hint}</p>
+  </div>`;
+}
+
+function switchTo(id) {
+  const next = SYSTEMS.find((s) => s.id === id);
+  if (!next) return;
+  current = next;
+  lastResult = null;
+  $('appTitle').textContent = current.name;
+  renderNav();
+  buildForm();
+  $('result').innerHTML = emptyStateHtml();
+  setCollapsed(false);
+  $('content').scrollTop = 0;
+}
+
+/** 收起 / 展开条件区 */
+function setCollapsed(v) {
+  $('inputPanel').classList.toggle('collapsed', v);
+  $('collapseBtn').textContent = v ? '改条件' : '收起';
+}
+
+/* ---------------- 排盘 ---------------- */
 
 async function doCast() {
   try {
@@ -558,33 +651,12 @@ async function doCast() {
     const result = current.cast();
     lastResult = result;
     $('result').innerHTML = current.render(result);
+    setCollapsed(true);
+    $('resultPanel').scrollIntoView({ behavior: 'smooth', block: 'start' });
   } catch (err) {
     $('result').innerHTML = `<div class="empty-state"><div class="empty-icon">⚠</div><p>${err.message || '排盘失败，请检查输入'}</p></div>`;
+    setCollapsed(false);
   }
-}
-
-function renderTabs() {
-  $('tabs').innerHTML = SYSTEMS.map((s) => `
-    <button class="tab${s.id === current.id ? ' active' : ''}" data-id="${s.id}" role="tab">
-      ${s.name}<span class="tab-sub">${s.sub}</span>
-    </button>`).join('');
-  $('tabs').querySelectorAll('.tab').forEach((btn) => {
-    btn.addEventListener('click', () => {
-      current = SYSTEMS.find((s) => s.id === btn.dataset.id);
-      lastResult = null;
-      renderTabs();
-      buildForm();
-      $('result').innerHTML = `<div class="empty-state">
-        <div class="empty-icon">${iconOf(current.id)}</div>
-        <p>${current.title}</p>
-        <p class="empty-sub">${current.hint}</p>
-      </div>`;
-    });
-  });
-}
-
-function iconOf(id) {
-  return { interpret: '论断', bazi: '干支', liuyao: '䷀', liuren: '壬', ziwei: '星', qimen: '奇', jiemeng: '梦' }[id] || '☯';
 }
 
 function randomize() {
@@ -600,9 +672,10 @@ function randomize() {
     formState.moment = null;
     buildForm();
   }
-  if ($('f-dream')) {
-    $("f-dream").value = DREAM_SAMPLES[Math.floor(Math.random() * DREAM_SAMPLES.length)];
-    formState.dream = $('f-dream').value;
+  const dreamEl = $('f-dream');
+  if (dreamEl) {
+    dreamEl.value = DREAM_SAMPLES[Math.floor(Math.random() * DREAM_SAMPLES.length)];
+    formState.dream = dreamEl.value;
   }
 }
 
@@ -616,21 +689,37 @@ function setNow() {
   buildForm();
 }
 
+const COPY_LABEL = '复制';
+
 function init() {
-  renderTabs();
+  $('appTitle').textContent = current.name;
+  renderNav();
   buildForm();
+
   $('castBtn').addEventListener('click', doCast);
   $('randomBtn').addEventListener('click', randomize);
   $('nowBtn').addEventListener('click', setNow);
+  $('collapseBtn').addEventListener('click', () => {
+    setCollapsed(!$('inputPanel').classList.contains('collapsed'));
+  });
+
+  $('sheetMask').addEventListener('click', closeSheet);
+  document.addEventListener('keydown', (e) => { if (e.key === 'Escape') closeSheet(); });
+
   $('inputForm').addEventListener('submit', (e) => { e.preventDefault(); doCast(); });
   $('inputForm').addEventListener('keydown', (e) => {
     if (e.key === 'Enter' && e.target.tagName !== 'TEXTAREA') { e.preventDefault(); doCast(); }
   });
+
   $('copyBtn').addEventListener('click', async () => {
-    if (!lastResult) { $('copyBtn').textContent = '暂无结果'; setTimeout(() => { $('copyBtn').textContent = '复制文本'; }, 1200); return; }
+    if (!lastResult) {
+      $('copyBtn').textContent = '暂无结果';
+      setTimeout(() => { $('copyBtn').textContent = COPY_LABEL; }, 1200);
+      return;
+    }
     const ok = await copyText(current.text(lastResult));
-    $('copyBtn').textContent = ok ? '已复制 ✓' : '复制失败';
-    setTimeout(() => { $('copyBtn').textContent = '复制文本'; }, 1400);
+    $('copyBtn').textContent = ok ? '已复制' : '失败';
+    setTimeout(() => { $('copyBtn').textContent = COPY_LABEL; }, 1400);
   });
 }
 
