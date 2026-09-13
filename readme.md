@@ -17,24 +17,39 @@
 
 ## 运行方式
 
-无需构建、无需依赖，任选一种方式打开：
+### 一、桌面应用（推荐）
 
-1. **直接双击** `index.html` 在浏览器中打开。
-2. 或启动一个本地静态服务器（推荐，避免个别浏览器的模块加载限制）：
+双击桌面的 **五术排盘** 快捷方式，或直接运行：
 
-```bash
-npx serve .
-# 或
-python -m http.server 8080
+```
+dist\五术排盘\五术排盘.exe
 ```
 
-然后访问对应地址即可。
+.exe 已把页面与 Python 运行时一起打包，**不装 Python、不联网、不需浏览器**，双击即开。
+窗口标题为「五术排盘 · 传统文化娱乐」。
+
+想重新打包，双击 `构建打包.bat` 即可（需先装 `python -m pip install pywebview pyinstaller`）。
+
+### 二、源码方式
+
+页面本身是纯前端，但用了 ES 模块，**用 `file://` 直接打开会被浏览器拦掉模块加载**，
+所以要用本地服务器：
+
+```bash
+python app.py          # 起桌面窗口（需 pip install pywebview）
+python -m http.server 8080   # 或只用浏览器
+```
+
+也可以双击 `index.html` 快速看个大概，但标签页与表单不会正常渲染。
 
 ## 目录结构
 
 ```
 index.html              页面骨架
+app.py                  桌面应用入口（内置本地服务器 + 原生窗口）
+构建打包.bat            一键打包成 exe
 assets/style.css        样式
+assets/icon.ico         应用图标
 src/
   app.js                主控：术数切换、表单、排盘调度、复制导出
   core/                 计算引擎（纯函数，无 DOM 依赖）
