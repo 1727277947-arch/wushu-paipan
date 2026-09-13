@@ -106,6 +106,13 @@ function monthPillar(curJD, yearStemIdx, year) {
   return { index: idx, name: ganzhiOf(stemIdx, branchIdx), term: current.name, termJD: current.jd };
 }
 
+/** 日期加减若干天 */
+function addDays(year, month, day, n) {
+  const d = new Date(Date.UTC(year, month - 1, day));
+  d.setUTCDate(d.getUTCDate() + n);
+  return { year: d.getUTCFullYear(), month: d.getUTCMonth() + 1, day: d.getUTCDate() };
+}
+
 /** 日柱 */
 function dayPillar(year, month, day) {
   const idx = dayPillarIndex(year, month, day);
@@ -196,13 +203,16 @@ function wuxingStats(pillars) {
 }
 
 /** 主入口：排八字 */
-export function computeBazi({ year, month, day, hour, minute, gender = '男' }) {
+export function computeBazi({ year, month, day, hour, minute, gender = '男', lateZiShi = true }) {
   const curJD = toJD(year, month, day, hour, minute);
   const terms = solarTermsOfYear(year);
 
   const yp = yearPillar(year, month, day, curJD);
   const mp = monthPillar(curJD, yp.index % 10, year);
-  const dp = dayPillar(year, month, day);
+  // 晚子时（23:00-24:00）按次日日柱论，此为子平主流取法
+  const lateZi = lateZiShi && hour === 23;
+  const dpDate = lateZi ? addDays(year, month, day, 1) : { year, month, day };
+  const dp = dayPillar(dpDate.year, dpDate.month, dpDate.day);
   const dayStem = dp.name[0];
   const hp = hourPillar(dayStem, hour);
 
