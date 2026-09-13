@@ -1,0 +1,19 @@
+{
+  "name": "传统文化娱乐 · 五术排盘",
+  "short_name": "五术排盘",
+  "description": "八字 · 六爻 · 大六壬 · 紫微斗数 · 奇门遁甲 · 命理解读 · 解梦",
+  "start_url": "./index.html",
+  "scope": "./",
+  "display": "standalone",
+  "background_color": "#faf8f4",
+  "theme_color": "#a8342a",
+  "lang": "zh-CN",
+  "icons": [
+    {
+      "src": "./assets/icon.svg",
+      "sizes": "any",
+      "type": "image/svg+xml",
+      "purpose": "any maskable"
+    }
+  ]
+}

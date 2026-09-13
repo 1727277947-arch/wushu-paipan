@@ -1,0 +1,63 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>传统文化娱乐 · 五术排盘</title>
+<link rel="stylesheet" href="./assets/style.css">
+<link rel="manifest" href="./manifest.webmanifest">
+<link rel="icon" type="image/svg+xml" href="./assets/icon.svg">
+<meta name="theme-color" content="#a8342a">
+<meta name="description" content="八字 · 六爻 · 大六壬 · 紫微斗数 · 奇门遁甲 · 命理解读 · 解梦">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="default">
+<meta name="apple-mobile-web-app-title" content="五术排盘">
+</head>
+<body>
+<div class="app">
+  <header class="topbar">
+    <div class="brand">
+      <span class="brand-mark">☯</span>
+      <div class="brand-text">
+        <h1>五术排盘</h1>
+        <p>传统文化娱乐 · 命理与卜筮</p>
+      </div>
+    </div>
+    <nav class="tabs" id="tabs" role="tablist"></nav>
+  </header>
+
+  <main class="stage">
+    <section class="panel input-panel" id="inputPanel">
+      <h2 class="panel-title" id="panelTitle">输入信息</h2>
+      <form id="inputForm" class="form-grid" autocomplete="off"></form>
+      <div class="actions">
+        <button type="button" class="btn primary" id="castBtn">开始排盘</button>
+        <button type="button" class="btn ghost" id="randomBtn">随机示例</button>
+        <button type="button" class="btn ghost" id="nowBtn">此刻</button>
+      </div>
+      <p class="hint" id="formHint"></p>
+    </section>
+
+    <section class="panel result-panel" id="resultPanel">
+      <div class="result-head">
+        <h2 class="panel-title">排盘结果</h2>
+        <button type="button" class="btn ghost small" id="copyBtn">复制文本</button>
+      </div>
+      <div id="result" class="result-body">
+        <div class="empty-state">
+          <div class="empty-icon">䷀</div>
+          <p>选择左侧上方术数，填写信息后点击「开始排盘」</p>
+          <p class="empty-sub">共收录 八字 · 六爻 · 大六壬 · 紫微斗数 · 奇门遁甲</p>
+        </div>
+      </div>
+    </section>
+  </main>
+
+  <footer class="foot">
+    <p>本工具为传统文化研究与娱乐用途，所有推算基于公开的传统术数算法。</p>
+    <p class="foot-sub">节气与农历采用天文算法实时推算，误差在分钟级。</p>
+  </footer>
+</div>
+<script type="module" src="./src/app.js"></script>
+</body>
+</html>

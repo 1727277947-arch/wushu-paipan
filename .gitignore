@@ -1,0 +1,16 @@
+﻿# 系统与编辑器
+Thumbs.db
+Desktop.ini
+.DS_Store
+*.swp
+.idea/
+.vscode/
+
+# 依赖与构建产物（本项目本无依赖，留作保险）
+node_modules/
+dist/
+*.log
+
+# 临时文件
+*.tmp
+_preview_*.png
