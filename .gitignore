@@ -15,6 +15,9 @@ build/
 *.spec
 *.log
 
+# 安卓签名私钥：本地保留即可，不发布
+android/wushu.keystore
+
 # 临时文件
 *.tmp
 _preview_*.png

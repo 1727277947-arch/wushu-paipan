@@ -1,0 +1,13 @@
+{
+  "name": "wushu-paipan",
+  "version": "1.0.0",
+  "private": true,
+  "type": "module",
+  "description": "五术排盘 · 传统文化娱乐：八字/六爻/大六壬/紫微斗数/奇门遁甲/命理解读/解梦",
+  "scripts": {
+    "build:html": "node make-app-html.mjs"
+  },
+  "devDependencies": {
+    "esbuild": "^0.28.2"
+  }
+}
