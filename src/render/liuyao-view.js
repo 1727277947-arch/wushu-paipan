@@ -1,7 +1,8 @@
 /** 六爻结果渲染 */
 
-import { esc, chip, secTitle, tag, hexSymbol, yaoSymbol } from './ui.js';
+import { esc, chip, secTitle, tag, hexSymbol, yaoSymbol, narrative, narrativeText } from './ui.js';
 import { hexagramText } from '../core/liuyao.js';
+import { readLiuyao } from '../core/read.js';
 
 export function renderLiuyao(r) {
   const parts = [];
@@ -55,6 +56,9 @@ export function renderLiuyao(r) {
     parts.push(secTitle('卦辞（象传）'));
     parts.push(`<div class="text-block">${esc(txt)}</div>`);
   }
+
+  parts.push(secTitle('白话解读'));
+  parts.push(narrative(readLiuyao(r)));
 
   parts.push(secTitle('排盘说明'));
   parts.push(`<ul class="notes">
@@ -112,5 +116,7 @@ export function liuyaoText(r) {
   }
   const t = hexagramText(r.name);
   if (t) { lines.push(''); lines.push(`卦辞：${t}`); }
+  lines.push('');
+  lines.push(...narrativeText(readLiuyao(r)));
   return lines.join('\n');
 }

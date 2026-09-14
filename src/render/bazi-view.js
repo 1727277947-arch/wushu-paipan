@@ -1,7 +1,8 @@
 /** 八字结果渲染 */
 
-import { esc, ganzhiHtml, chip, secTitle, tag, WX_CLASS } from './ui.js';
+import { esc, ganzhiHtml, chip, secTitle, tag, WX_CLASS, narrative, narrativeText } from './ui.js';
 import { WUXING } from '../core/bazi.js';
+import { readBazi } from '../core/read.js';
 
 export function renderBazi(r) {
   const parts = [];
@@ -76,6 +77,9 @@ export function renderBazi(r) {
   }
 
   // 说明
+  parts.push(secTitle('白话解读'));
+  parts.push(narrative(readBazi(r)));
+
   parts.push(secTitle('排盘说明'));
   parts.push(`<ul class="notes">
     <li><b>年柱</b>以立春为界，非以正月初一，故年初出生者需留意换年。</li>
@@ -120,5 +124,7 @@ export function baziText(r) {
     lines.push(`大运（${r.luck.direction}，${r.luck.startAgeText}起运）：`);
     lines.push(r.luck.pillars.map((x) => `${x.startAge}岁 ${x.name}`).join('　'));
   }
+  lines.push('');
+  lines.push(...narrativeText(readBazi(r)));
   return lines.join('\n');
 }

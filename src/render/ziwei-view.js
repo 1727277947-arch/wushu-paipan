@@ -1,6 +1,7 @@
 /** 紫微斗数结果渲染 */
 
-import { esc, chip, secTitle, tag } from './ui.js';
+import { esc, chip, secTitle, tag, narrative, narrativeText } from './ui.js';
+import { readZiwei } from '../core/read.js';
 
 /**
  * 十二宫在地支盘上的坐标：row 自上而下 1-4，col 自左而右 1-4。
@@ -70,6 +71,9 @@ export function renderZiwei(r) {
   });
   parts.push('</tbody></table>');
 
+  parts.push(secTitle('白话解读'));
+  parts.push(narrative(readZiwei(r)));
+
   parts.push(secTitle('排盘说明'));
   parts.push(`<ul class="notes">
     <li><b>命宫</b>由生月与生时定，<b>身宫</b>为后天着力之处。★ 为命宫，◆ 为身宫。</li>
@@ -126,5 +130,7 @@ export function ziweiText(r) {
   });
   lines.push('');
   lines.push('四化：' + r.sihua.map((h) => `${h.star}${h.type}（${h.palace}）`).join('　'));
+  lines.push('');
+  lines.push(...narrativeText(readZiwei(r)));
   return lines.join('\n');
 }

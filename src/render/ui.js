@@ -46,6 +46,26 @@ export function hexSymbol(yaos) {
   return `<div class="symbol-lines">${lines}</div>`;
 }
 
+/** 白话论断区块（各术数通用） */
+export function narrative(paras) {
+  const blocks = paras.map((p) => `<article class="nar-block">
+      <h4 class="nar-title">${esc(p.title)}</h4>
+      <p class="nar-text">${esc(p.text)}</p>
+    </article>`).join('');
+  return `<div class="narrative">${blocks}</div>`;
+}
+
+/** 白话论断的纯文本片段 */
+export function narrativeText(paras) {
+  const lines = ['── 白话解读 ──'];
+  paras.forEach((p) => {
+    lines.push(`【${p.title}】`);
+    lines.push(p.text);
+    lines.push('');
+  });
+  return lines;
+}
+
 /** 十二地支顺时针环形（用于天地盘） */
 export const BRANCHES_ORDER = ['子', '丑', '寅', '卯', '辰', '巳', '午', '未', '申', '酉', '戌', '亥'];
 

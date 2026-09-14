@@ -1,6 +1,7 @@
 /** 大六壬结果渲染 */
 
-import { esc, chip, secTitle, tag, BRANCHES_ORDER, ganzhiHtml } from './ui.js';
+import { esc, chip, secTitle, tag, BRANCHES_ORDER, ganzhiHtml, narrative, narrativeText } from './ui.js';
+import { readLiuren } from '../core/read.js';
 
 export function renderLiuren(r) {
   const parts = [];
@@ -51,6 +52,9 @@ export function renderLiuren(r) {
       </div>
     </div>`).join('')}</div>`);
 
+  parts.push(secTitle('白话解读'));
+  parts.push(narrative(readLiuren(r)));
+
   parts.push(secTitle('排盘说明'));
   parts.push(`<ul class="notes">
     <li><b>月将</b>为太阳所躔之宫，雨水后用亥将，依次逆推。</li>
@@ -84,5 +88,7 @@ export function liurenText(r) {
   r.sanChuan.items.forEach((it) => {
     lines.push(`  ${it.pos}　${it.branch}　${it.element}${it.relation}　${it.general}${it.dunGan && it.dunGan !== '—' ? '　遁' + it.dunGan : ''}`);
   });
+  lines.push('');
+  lines.push(...narrativeText(readLiuren(r)));
   return lines.join('\n');
 }

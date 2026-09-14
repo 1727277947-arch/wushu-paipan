@@ -1,6 +1,7 @@
 /** 奇门遁甲结果渲染 */
 
-import { esc, chip, secTitle, tag } from './ui.js';
+import { esc, chip, secTitle, tag, narrative, narrativeText } from './ui.js';
+import { readQimen } from '../core/read.js';
 
 /** 九宫在 3x3 网格中的位置（洛书方位：上南下北，左东右西） */
 const GRID_POS = {
@@ -55,6 +56,9 @@ export function renderQimen(r) {
     </tr>`);
   });
   parts.push('</tbody></table>');
+
+  parts.push(secTitle('白话解读'));
+  parts.push(narrative(readQimen(r)));
 
   parts.push(secTitle('排盘说明'));
   parts.push(`<ul class="notes">
@@ -112,5 +116,7 @@ export function qimenText(r) {
     });
     lines.push(line.join(' | '));
   });
+  lines.push('');
+  lines.push(...narrativeText(readQimen(r)));
   return lines.join('\n');
 }
