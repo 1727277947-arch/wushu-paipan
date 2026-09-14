@@ -14,7 +14,8 @@ export function renderBazi(r) {
     ${chip('生肖', r.zodiac)}
     ${chip('日主', `${r.dayMaster.stem}${r.dayMaster.element}（${r.dayMaster.verdict}）`, true)}
     ${chip('月令', r.monthTerm)}
-    ${chip('空亡', r.xunKong.join(''))}
+    ${chip('日空', r.xunKong.join(''))}
+    ${r.xunKongYear ? chip('年空', r.xunKongYear.join('')) : ''}
   </div>`);
 
   // 四柱大表

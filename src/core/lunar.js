@@ -213,8 +213,14 @@ export function solarTermsFromWinterSolstice(year) {
  * 由前一冬至起算，筛出落在该公历年内的节气。
  */
 export function solarTermsOfYear(year) {
-  const from = solarTermsFromWinterSolstice(year - 1);
-  return from.filter((t) => t.year === year).sort((a, b) => a.jd - b.jd);
+  // 注意：solarTermsFromWinterSolstice(Y) 返回的是「Y 年冬至」起的 24 个节气，
+  // 到次年大雪为止，因此不含 Y 年的冬至。
+  // 这里把前后两次都取来再按公历年过滤，才能拿到完整的 24 个（含冬至）。
+  const all = [
+    ...solarTermsFromWinterSolstice(year - 1),
+    ...solarTermsFromWinterSolstice(year),
+  ];
+  return all.filter((t) => t.year === year).sort((a, b) => a.jd - b.jd);
 }
 
 /**

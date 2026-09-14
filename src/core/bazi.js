@@ -296,7 +296,8 @@ export function computeBazi({ year, month, day, hour, minute, gender = '男', la
     luck,
     wuxing,
     zodiac: BRANCH_ZODIAC[detail[0].branch],
-    xunKong: detail[0].xunKong,
+    xunKong: detail[2].xunKong,        // 日柱旬空，命理常说的「空亡」即指此
+    xunKongYear: detail[0].xunKong,    // 年柱旬空，另列备查
     monthTerm: mp.term,
     ganzhiYear: yp.ganzhiYear,
     baziText: detail.map((d) => d.name).join(' '),

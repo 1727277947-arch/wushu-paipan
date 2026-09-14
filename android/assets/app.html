@@ -1351,8 +1351,11 @@ body::before {
     return result;
   }
   function solarTermsOfYear(year) {
-    const from = solarTermsFromWinterSolstice(year - 1);
-    return from.filter((t) => t.year === year).sort((a, b) => a.jd - b.jd);
+    const all = [
+      ...solarTermsFromWinterSolstice(year - 1),
+      ...solarTermsFromWinterSolstice(year)
+    ];
+    return all.filter((t) => t.year === year).sort((a, b) => a.jd - b.jd);
   }
   function dayPillarIndex(year, month, day) {
     const anchorJD = gregorianToJD(1900, 1, 1, 0, 0);
@@ -1676,7 +1679,10 @@ body::before {
       luck,
       wuxing,
       zodiac: BRANCH_ZODIAC[detail[0].branch],
-      xunKong: detail[0].xunKong,
+      xunKong: detail[2].xunKong,
+      // 日柱旬空，命理常说的「空亡」即指此
+      xunKongYear: detail[0].xunKong,
+      // 年柱旬空，另列备查
       monthTerm: mp.term,
       ganzhiYear: yp.ganzhiYear,
       baziText: detail.map((d) => d.name).join(" ")
@@ -4114,7 +4120,7 @@ body::before {
     const dayNayin = b.pillars[2].nayin;
     out.push({
       title: "五、几个小细节",
-      text: `你属${b.zodiac}。日柱纳音是「${dayNayin}」——纳音是古人另一套叫法，看着玩就行，不必当真。这一旬的空亡在${b.xunKong.join("、")}。空亡的意思是这两个字的力量打了折，落在哪一柱，那一柱代表的关系就松一些，不是坏事，是提醒你别在那上面较真。最后说句实在话：八字看的是「底子」，底子只决定你起手的牌，怎么打还得看你自己。想听人生走向、财运官运、什么时候转运，去「命理解读」那一栏看，那是专门讲这个的。`
+      text: `你属${b.zodiac}。日柱纳音是「${dayNayin}」——纳音是古人另一套叫法，看着玩就行，不必当真。日柱这一旬的空亡在${b.xunKong.join("、")}（年柱的空亡另在${(b.xunKongYear || []).join("、")}）。空亡的意思是这两个字的力量打了折，落在哪一柱，那一柱代表的关系就松一些，不是坏事，是提醒你别在那上面较真。最后说句实在话：八字看的是「底子」，底子只决定你起手的牌，怎么打还得看你自己。想听人生走向、财运官运、什么时候转运，去「命理解读」那一栏看，那是专门讲这个的。`
     });
     return out;
   }
@@ -4359,7 +4365,8 @@ body::before {
     ${chip("生肖", r.zodiac)}
     ${chip("日主", `${r.dayMaster.stem}${r.dayMaster.element}（${r.dayMaster.verdict}）`, true)}
     ${chip("月令", r.monthTerm)}
-    ${chip("空亡", r.xunKong.join(""))}
+    ${chip("日空", r.xunKong.join(""))}
+    ${r.xunKongYear ? chip("年空", r.xunKongYear.join("")) : ""}
   </div>`);
     const p = r.pillars;
     parts.push(secTitle("四柱八字"));
