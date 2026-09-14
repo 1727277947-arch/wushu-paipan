@@ -1,7 +1,7 @@
 /** 紫微斗数结果渲染 */
 
 import { esc, chip, secTitle, tag, narrative, narrativeText } from './ui.js';
-import { readZiwei } from '../core/read.js';
+import { readZiwei, METHOD_NOTE } from '../core/read.js';
 
 /**
  * 十二宫在地支盘上的坐标：row 自上而下 1-4，col 自左而右 1-4。
@@ -73,6 +73,7 @@ export function renderZiwei(r) {
 
   parts.push(secTitle('白话解读'));
   parts.push(narrative(readZiwei(r)));
+  parts.push('<p class="method-note">' + esc(METHOD_NOTE) + '</p>');
 
   parts.push(secTitle('排盘说明'));
   parts.push(`<ul class="notes">

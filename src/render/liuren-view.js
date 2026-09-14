@@ -1,7 +1,7 @@
 /** 大六壬结果渲染 */
 
 import { esc, chip, secTitle, tag, BRANCHES_ORDER, ganzhiHtml, narrative, narrativeText } from './ui.js';
-import { readLiuren } from '../core/read.js';
+import { readLiuren, METHOD_NOTE } from '../core/read.js';
 
 export function renderLiuren(r) {
   const parts = [];
@@ -54,6 +54,7 @@ export function renderLiuren(r) {
 
   parts.push(secTitle('白话解读'));
   parts.push(narrative(readLiuren(r)));
+  parts.push('<p class="method-note">' + esc(METHOD_NOTE) + '</p>');
 
   parts.push(secTitle('排盘说明'));
   parts.push(`<ul class="notes">

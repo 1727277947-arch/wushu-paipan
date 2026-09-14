@@ -2,7 +2,7 @@
 
 import { esc, ganzhiHtml, chip, secTitle, tag, WX_CLASS, narrative, narrativeText } from './ui.js';
 import { WUXING } from '../core/bazi.js';
-import { readBazi } from '../core/read.js';
+import { readBazi, METHOD_NOTE } from '../core/read.js';
 
 export function renderBazi(r) {
   const parts = [];
@@ -80,6 +80,7 @@ export function renderBazi(r) {
   // 说明
   parts.push(secTitle('白话解读'));
   parts.push(narrative(readBazi(r)));
+  parts.push('<p class="method-note">' + esc(METHOD_NOTE) + '</p>');
 
   parts.push(secTitle('排盘说明'));
   parts.push(`<ul class="notes">

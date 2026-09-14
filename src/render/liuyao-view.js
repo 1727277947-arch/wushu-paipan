@@ -2,7 +2,7 @@
 
 import { esc, chip, secTitle, tag, hexSymbol, yaoSymbol, narrative, narrativeText } from './ui.js';
 import { hexagramText } from '../core/liuyao.js';
-import { readLiuyao } from '../core/read.js';
+import { readLiuyao, METHOD_NOTE } from '../core/read.js';
 
 export function renderLiuyao(r) {
   const parts = [];
@@ -59,6 +59,7 @@ export function renderLiuyao(r) {
 
   parts.push(secTitle('白话解读'));
   parts.push(narrative(readLiuyao(r)));
+  parts.push('<p class="method-note">' + esc(METHOD_NOTE) + '</p>');
 
   parts.push(secTitle('排盘说明'));
   parts.push(`<ul class="notes">
