@@ -60,7 +60,17 @@ export function renderBazi(r) {
 
   // 大运
   if (r.luck) {
-    parts.push(secTitle(`大运 · ${r.luck.direction}`));
+    if (r.relations && r.relations.length) {
+    parts.push(secTitle('地支关系（刑冲合害）'));
+    parts.push('<ul class="rel-list">');
+    r.relations.forEach((x) => {
+      parts.push(`<li><b>${esc(x.type)}</b><span class="rel-text">${esc(x.text)}</span><i>${esc(x.note)}</i></li>`);
+    });
+    parts.push('</ul>');
+    parts.push('<p class="rel-note">这些关系会改变五行的实际力量：上面的分布是「八个字里各有多少」，判强弱喜忌时用的是计入这些关系之后的力量。</p>');
+  }
+
+  parts.push(secTitle(`大运 · ${r.luck.direction}`));
     parts.push(`<div class="meta-bar" style="border-bottom:none;padding:0 0 8px">
       ${chip('起运', r.luck.startAgeText)}
       ${chip('参考节气', r.luck.refTerm)}

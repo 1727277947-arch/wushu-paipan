@@ -1116,6 +1116,20 @@ body::before {
   color: var(--ink-faint);
 }
 
+/* 地支关系（刑冲合害） */
+.rel-list { list-style: none; margin: 0; padding: 0; display: flex; flex-direction: column; gap: 8px; }
+.rel-list li {
+  display: flex; align-items: baseline; gap: 8px; flex-wrap: wrap;
+  padding: 9px 12px; border: 1px solid var(--line); border-radius: 8px; background: var(--paper);
+}
+.rel-list b {
+  flex: 0 0 auto; font-family: var(--font-serif); font-size: 12.5px;
+  padding: 1px 8px; border-radius: 999px; background: var(--cinnabar); color: #fff;
+}
+.rel-list .rel-text { font-family: var(--font-serif); font-size: 13.5px; color: var(--ink); }
+.rel-list i { font-style: normal; font-size: 11.5px; color: var(--ink-faint); width: 100%; }
+.rel-note { margin: 10px 0 0; font-size: 11.5px; line-height: 1.7; color: var(--ink-faint); }
+
 </style>
 <meta name="theme-color" content="#a8342a">
 <meta name="description" content="八字 · 六爻 · 大六壬 · 紫微斗数 · 奇门遁甲 · 命理解读 · 解梦">
@@ -1331,9 +1345,9 @@ body::before {
   }
   function solveSolarLongitude(targetDeg, hintJD) {
     let jd = hintJD;
-    const norm = (deg) => ((deg + 180) % 360 + 360) % 360 - 180;
+    const norm2 = (deg) => ((deg + 180) % 360 + 360) % 360 - 180;
     for (let i = 0; i < 24; i += 1) {
-      const diff = norm(solarApparentLongitude(jd) - targetDeg);
+      const diff = norm2(solarApparentLongitude(jd) - targetDeg);
       if (Math.abs(diff) < 1e-7) break;
       jd -= diff / 360 * 365.2422;
     }
@@ -1426,6 +1440,228 @@ body::before {
   ];
   function nayin(jiaziIdx) {
     return NAYIN[Math.floor((jiaziIdx % 60 + 60) % 60 / 2)];
+  }
+
+  // src/core/relations.js
+  var CHONG = [
+    ["子", "午"],
+    ["丑", "未"],
+    ["寅", "申"],
+    ["卯", "酉"],
+    ["辰", "戌"],
+    ["巳", "亥"]
+  ];
+  var HE6 = {
+    "子丑": "土",
+    "寅亥": "木",
+    "卯戌": "火",
+    "辰酉": "金",
+    "巳申": "水",
+    "午未": "土"
+  };
+  var SANHE = [
+    { branches: ["申", "子", "辰"], element: "水", wang: "子" },
+    { branches: ["亥", "卯", "未"], element: "木", wang: "卯" },
+    { branches: ["寅", "午", "戌"], element: "火", wang: "午" },
+    { branches: ["巳", "酉", "丑"], element: "金", wang: "酉" }
+  ];
+  var SANHUI = [
+    { branches: ["寅", "卯", "辰"], element: "木" },
+    { branches: ["巳", "午", "未"], element: "火" },
+    { branches: ["申", "酉", "戌"], element: "金" },
+    { branches: ["亥", "子", "丑"], element: "水" }
+  ];
+  var HAI6 = [
+    ["子", "未"],
+    ["丑", "午"],
+    ["寅", "巳"],
+    ["卯", "辰"],
+    ["申", "亥"],
+    ["酉", "戌"]
+  ];
+  var XING3 = [
+    { branches: ["寅", "巳", "申"], name: "无恩之刑" },
+    { branches: ["丑", "戌", "未"], name: "恃势之刑" },
+    { branches: ["子", "卯"], name: "无礼之刑" }
+  ];
+  var ZIXING = ["辰", "午", "酉", "亥"];
+  var GAN_HE = {
+    "甲己": "土",
+    "乙庚": "金",
+    "丙辛": "水",
+    "丁壬": "木",
+    "戊癸": "火"
+  };
+  var GAN_CHONG = [["甲", "庚"], ["乙", "辛"], ["丙", "壬"], ["丁", "癸"]];
+  var norm = (a, b) => [a, b].sort().join("");
+  function isChong(a, b) {
+    return CHONG.some(([x, y]) => norm(a, b) === norm(x, y));
+  }
+  function he6Of(a, b) {
+    return HE6[a + b] || HE6[b + a] || null;
+  }
+  function isHai(a, b) {
+    return HAI6.some(([x, y]) => norm(a, b) === norm(x, y));
+  }
+  function ganHeOf(a, b) {
+    return GAN_HE[a + b] || GAN_HE[b + a] || null;
+  }
+  function isGanChong(a, b) {
+    return GAN_CHONG.some(([x, y]) => norm(a, b) === norm(x, y));
+  }
+  function xingOf(branches) {
+    for (const x of XING3) {
+      if (x.branches.length === 2) {
+        if (branches.filter((b) => x.branches.includes(b)).length >= 2) return x.name;
+      } else if (x.branches.every((b) => branches.includes(b))) {
+        return x.name;
+      }
+    }
+    return null;
+  }
+  function ziXingOf(branches) {
+    return ZIXING.some((z) => branches.filter((b) => b === z).length >= 2);
+  }
+  var SHENG = { 木: "火", 火: "土", 土: "金", 金: "水", 水: "木" };
+  var LABEL = ["年", "月", "日", "时"];
+  function findRelations(pillars) {
+    const br = pillars.map((p) => p.branch);
+    const st = pillars.map((p) => p.stem);
+    const out = [];
+    for (let i = 0; i < 4; i += 1) {
+      for (let j = i + 1; j < 4; j += 1) {
+        const where = `${LABEL[i]}支${br[i]}、${LABEL[j]}支${br[j]}`;
+        if (isChong(br[i], br[j])) out.push({ type: "冲", positions: [i, j], text: `${where} 相冲`, note: "两支对冲，本气受损，主变动、不稳" });
+        const he = he6Of(br[i], br[j]);
+        if (he) out.push({ type: "合", positions: [i, j], text: `${where} 六合化${he}`, note: `合则牵绊，能否化${he}要看月令与透干` });
+        if (isHai(br[i], br[j])) out.push({ type: "害", positions: [i, j], text: `${where} 相害`, note: "相害主暗中损耗、彼此妨碍" });
+        const gh = ganHeOf(st[i], st[j]);
+        if (gh) out.push({ type: "干合", positions: [i, j], text: `${LABEL[i]}干${st[i]}、${LABEL[j]}干${st[j]} 五合化${gh}`, note: "天干相合，主人事牵连" });
+        if (isGanChong(st[i], st[j])) out.push({ type: "干冲", positions: [i, j], text: `${LABEL[i]}干${st[i]}、${LABEL[j]}干${st[j]} 相冲`, note: "天干相冲，主外显层面的冲突" });
+      }
+    }
+    SANHE.forEach((g) => {
+      const have = g.branches.filter((b) => br.includes(b));
+      if (have.length === 3) out.push({ type: "三合", text: `${g.branches.join("")} 三合${g.element}局`, note: `化神${g.element}大盛`, positions: g.branches.map((b) => br.indexOf(b)) });
+      else if (have.length === 2 && have.includes(g.wang)) out.push({ type: "半合", text: `${have.join("")} 半合${g.element}局`, note: `含旺支${g.wang}，合而有情`, positions: have.map((b) => br.indexOf(b)) });
+      else if (have.length === 2) out.push({ type: "拱合", text: `${have.join("")} 拱${g.element}局`, note: "缺旺支，力量较弱", positions: have.map((b) => br.indexOf(b)) });
+    });
+    SANHUI.forEach((g) => {
+      if (g.branches.every((b) => br.includes(b))) {
+        out.push({ type: "三会", text: `${g.branches.join("")} 三会${g.element}方`, note: `方位之气聚于${g.element}，力最强`, positions: g.branches.map((b) => br.indexOf(b)) });
+      }
+    });
+    const xn = xingOf(br);
+    if (xn) out.push({ type: "刑", text: `命局见${xn}`, note: "相刑主牵制、纠纷、内耗", positions: [] });
+    if (ziXingOf(br)) out.push({ type: "自刑", text: "命局见自刑", note: "自刑主自我消耗、反复", positions: [] });
+    return out;
+  }
+  function relationEffects(pillars) {
+    const br = pillars.map((p) => p.branch);
+    const st = pillars.map((p) => p.stem);
+    const monthEl = BRANCH_WUXING[br[1]];
+    const branchMult = [1, 1, 1, 1];
+    const stemMult = [1, 1, 1, 1];
+    const bonus = { 木: 0, 火: 0, 土: 0, 金: 0, 水: 0 };
+    const list = findRelations(pillars);
+    const clashedSet = /* @__PURE__ */ new Set();
+    for (let i = 0; i < 4; i += 1) {
+      for (let j = i + 1; j < 4; j += 1) {
+        if (isChong(br[i], br[j])) {
+          clashedSet.add(i);
+          clashedSet.add(j);
+        }
+      }
+    }
+    const stemEls = st.map((s) => STEM_WUXING[s]);
+    const canTransform = (el) => monthEl === el || SHENG[monthEl] === el || stemEls.includes(el);
+    for (let i = 0; i < 4; i += 1) {
+      for (let j = i + 1; j < 4; j += 1) {
+        const clashed = isChong(br[i], br[j]);
+        if (clashed) {
+          branchMult[i] *= 0.65;
+          branchMult[j] *= 0.65;
+        }
+        const he = he6Of(br[i], br[j]);
+        if (he) {
+          if (canTransform(he) && !clashedSet.has(i) && !clashedSet.has(j)) {
+            branchMult[i] *= 0.45;
+            branchMult[j] *= 0.45;
+            bonus[he] += 1.1;
+          } else {
+            branchMult[i] *= 0.85;
+            branchMult[j] *= 0.85;
+          }
+        }
+        if (isHai(br[i], br[j])) {
+          branchMult[i] *= 0.9;
+          branchMult[j] *= 0.9;
+        }
+        const gh = ganHeOf(st[i], st[j]);
+        if (gh) {
+          if (canTransform(gh)) {
+            stemMult[i] *= 0.5;
+            stemMult[j] *= 0.5;
+            bonus[gh] += 0.6;
+          } else {
+            stemMult[i] *= 0.9;
+            stemMult[j] *= 0.9;
+          }
+        }
+        if (isGanChong(st[i], st[j])) {
+          stemMult[i] *= 0.9;
+          stemMult[j] *= 0.9;
+        }
+      }
+    }
+    SANHE.forEach((g) => {
+      const have = g.branches.filter((b) => br.includes(b));
+      const hit = (b) => br.forEach((x, i) => {
+        if (x === b) branchMult[i] *= 1;
+      });
+      if (have.length === 3) {
+        g.branches.forEach((b) => br.forEach((x, i) => {
+          if (x === b) branchMult[i] *= 0.45;
+        }));
+        bonus[g.element] += 1.6;
+      } else if (have.length === 2 && have.includes(g.wang)) {
+        have.forEach((b) => br.forEach((x, i) => {
+          if (x === b) branchMult[i] *= 0.7;
+        }));
+        bonus[g.element] += 0.7;
+      } else if (have.length === 2) {
+        bonus[g.element] += 0.25;
+      }
+      void hit;
+    });
+    SANHUI.forEach((g) => {
+      if (g.branches.every((b) => br.includes(b))) {
+        g.branches.forEach((b) => br.forEach((x, i) => {
+          if (x === b) branchMult[i] *= 0.4;
+        }));
+        bonus[g.element] += 1.8;
+      }
+    });
+    if (xingOf(br)) {
+      XING3.forEach((x) => {
+        const hits = x.branches.filter((b) => br.includes(b));
+        if (hits.length >= (x.branches.length === 2 ? 2 : 3)) {
+          hits.forEach((b) => br.forEach((v, i) => {
+            if (v === b) branchMult[i] *= 0.88;
+          }));
+        }
+      });
+    }
+    if (ziXingOf(br)) {
+      ZIXING.forEach((z) => {
+        if (br.filter((b) => b === z).length >= 2) {
+          br.forEach((b, i) => {
+            if (b === z) branchMult[i] *= 0.9;
+          });
+        }
+      });
+    }
+    return { branchMult, stemMult, bonus, list };
   }
 
   // src/core/bazi.js
@@ -1591,20 +1827,27 @@ body::before {
       pillars
     };
   }
-  function wuxingStats(pillars) {
+  function wuxingStats(pillars, branchMult, stemMult, bonus) {
     const stats = { 木: 0, 火: 0, 土: 0, 金: 0, 水: 0 };
     const weights = [0.9, 1.2, 1.4, 1];
     pillars.forEach((p, i) => {
       const w = weights[i] ?? 1;
+      const bm = branchMult ? branchMult[i] : 1;
+      const sm = stemMult ? stemMult[i] : 1;
       const stem = p.name[0];
       const branch = p.name[1];
-      stats[STEM_WUXING[stem]] += w;
+      stats[STEM_WUXING[stem]] += w * sm;
       const hidden = BRANCH_HIDDEN_STEMS[branch];
       const hw = [0.6, 0.3, 0.1];
       hidden.forEach((h, k) => {
-        stats[STEM_WUXING[h]] += w * (hw[k] ?? 0.1);
+        stats[STEM_WUXING[h]] += w * (hw[k] ?? 0.1) * bm;
       });
     });
+    if (bonus) {
+      Object.entries(bonus).forEach(([el, v]) => {
+        stats[el] += v;
+      });
+    }
     const total = Object.values(stats).reduce((a, b) => a + b, 0);
     const percent = {};
     Object.keys(stats).forEach((k) => {
@@ -1653,12 +1896,14 @@ body::before {
       };
     });
     const luck = computeLuck(gender, curJD, year, yp.name[0], mp.index);
-    const wuxing = wuxingStats(pillarList);
+    const wuxing = wuxingStats(detail);
+    const effects = relationEffects(detail);
+    const wuxingEffective = wuxingStats(detail, effects.branchMult, effects.stemMult, effects.bonus);
     const me = STEM_WUXING[dayStem];
     const supportElements = [me, Object.keys(GENERATES).find((k) => GENERATES[k] === me)];
     let support = 0;
     let drain = 0;
-    Object.entries(wuxing.raw).forEach(([el, v]) => {
+    Object.entries(wuxingEffective.raw).forEach(([el, v]) => {
       if (supportElements.includes(el)) support += v;
       else drain += v;
     });
@@ -1690,6 +1935,8 @@ body::before {
       dayMaster,
       luck,
       wuxing,
+      wuxingEffective,
+      relations: effects.list,
       zodiac: BRANCH_ZODIAC[detail[0].branch],
       xunKong: detail[2].xunKong,
       // 日柱旬空，命理常说的「空亡」即指此
@@ -3749,6 +3996,8 @@ body::before {
     官杀: "位置和压力（名分、职位、约束、责任）",
     印: "学问和靠山（知识、名声、贵人、长辈）"
   };
+  var SHENG_WX = { 木: "火", 火: "土", 土: "金", 金: "水", 水: "木" };
+  var LABEL4 = ["年", "月", "日", "时"];
   var REL_TO_GROUP = {
     同类: "比劫",
     我生: "食伤",
@@ -3820,7 +4069,7 @@ body::before {
       percent: Object.fromEntries(Object.entries(scores).map(([k, v]) => [k, v / total * 100]))
     };
   }
-  function scorePillarForLuck(pillar, dayMaster, scores) {
+  function scorePillarForLuck(pillar, dayMaster, scores, natalPillars) {
     const stem = pillar.stem ?? (pillar.name ? pillar.name[0] : "");
     const branch = pillar.branch ?? (pillar.name ? pillar.name[1] : "");
     const dayEl = dayMaster.element;
@@ -3856,6 +4105,53 @@ body::before {
       return a;
     }, 0);
     score += hiddenScore;
+    if (natalPillars && natalPillars.length === 4) {
+      const natalBranches = natalPillars.map((x) => x.branch);
+      const monthEl = BRANCH_WUXING[natalBranches[1]];
+      const natalEls = natalPillars.map((x) => STEM_WUXING[x.stem]);
+      const canTransform = (el) => monthEl === el || SHENG_WX[monthEl] === el || natalEls.includes(el);
+      natalBranches.forEach((nb, i) => {
+        if (isChong(branch, nb)) {
+          score -= 0.45;
+          reasons.push(`${branch}冲命局${LABEL4[i]}支${nb}（主变动）`);
+        }
+        const he = he6Of(branch, nb);
+        if (he) {
+          if (canTransform(he)) {
+            if (favorable.has(he)) {
+              score += 0.6;
+              reasons.push(`${branch}与${LABEL4[i]}支${nb}合化${he}（喜）`);
+            } else if (unfavorable.has(he)) {
+              score -= 0.55;
+              reasons.push(`${branch}与${LABEL4[i]}支${nb}合化${he}（忌）`);
+            }
+          } else {
+            score -= 0.15;
+            reasons.push(`${branch}与${LABEL4[i]}支${nb}相合（牵绊）`);
+          }
+        }
+        if (isHai(branch, nb)) {
+          score -= 0.15;
+          reasons.push(`${branch}与${LABEL4[i]}支${nb}相害`);
+        }
+      });
+      SANHE.forEach((g) => {
+        if (!g.branches.includes(branch)) return;
+        const all = /* @__PURE__ */ new Set([...natalBranches, branch]);
+        const have = g.branches.filter((b) => all.has(b));
+        const full = have.length === 3;
+        const half = have.length === 2 && have.includes(g.wang);
+        if (!full && !half) return;
+        const w = full ? 0.8 : 0.5;
+        if (favorable.has(g.element)) {
+          score += w;
+          reasons.push(`${have.join("")}${full ? "三合" : "半合"}${g.element}局（喜）`);
+        } else if (unfavorable.has(g.element)) {
+          score -= w;
+          reasons.push(`${have.join("")}${full ? "三合" : "半合"}${g.element}局（忌）`);
+        }
+      });
+    }
     const godOf = (el) => REL_TO_GROUP[relationToDayMaster(dayEl, el)];
     const stemGod = godOf(stemEl);
     const branchGod = godOf(branchEl);
@@ -3864,14 +4160,17 @@ body::before {
       stemGod,
       branchGod,
       reasons,
-      level: score >= 1.5 ? "大吉" : score >= 0.6 ? "吉" : score > -0.6 ? "平" : score > -1.5 ? "不佳" : "凶"
+      // 分档阈值：喜神两类、忌神三类，若不把「平」的区间放宽，
+      // 结果会系统性偏悲观（多数大运被打成凶），与「大多数十年本就平常」的
+      // 传统看法不符。此处按 吉:平:凶 ≈ 2:5:3 校准，属量化近似。
+      level: score >= 1.5 ? "大吉" : score >= 0.75 ? "吉" : score > -0.9 ? "平" : score > -1.9 ? "不佳" : "凶"
     };
   }
   function findTurningPoints(analysis, currentYear, horizons = 10) {
     const { dayMaster, luck } = analysis;
     const points = [];
     luck.pillars.forEach((lp) => {
-      const s = scorePillarForLuck(lp, dayMaster, analysis.type.scores);
+      const s = scorePillarForLuck(lp, dayMaster, analysis.type.scores, analysis.pillars);
       lp.score = s.score;
       lp.level = s.level;
       lp.reasons = s.reasons;
@@ -3897,7 +4196,7 @@ body::before {
       const gzIdx = ((y - 1984) % 60 + 60) % 60;
       const stem = STEMS[gzIdx % 10];
       const branch = BRANCHES[gzIdx % 12];
-      const s = scorePillarForLuck({ stem, branch }, dayMaster, analysis.type.scores);
+      const s = scorePillarForLuck({ stem, branch }, dayMaster, analysis.type.scores, analysis.pillars);
       yearScores.push({ year: y, stem, branch, name: stem + branch, ...s });
     }
     const ranked = yearScores.slice().sort((a, b) => b.score - a.score);
@@ -4123,16 +4422,21 @@ body::before {
       title: "三、命里哪几样占得多",
       text: `十神归成五类看：${ranked.map(([k, v]) => `${GROUP_PLAIN[k].name} ${v.toFixed(0)}%`).join("，")}。占得最多的是${top3.map(([k, v]) => `${GROUP_PLAIN[k].name}（${v.toFixed(0)}%）`).join("、")}。` + top3.map(([k]) => `所谓${GROUP_PLAIN[k].name}，指${GROUP_PLAIN[k].desc}。`).join("") + `占得最少的是${GROUP_PLAIN[ranked[ranked.length - 1][0]].name}，是你不太倚重的一面，知道就好。`
     });
-    const scored = b.luck.pillars.map((lp) => ({ ...lp, level: scorePillarForLuck(lp, dm, scores).level }));
+    const scored = b.luck.pillars.map((lp) => ({ ...lp, level: scorePillarForLuck(lp, dm, scores, b.pillars).level }));
     const good = scored.filter((x) => x.level === "大吉" || x.level === "吉");
     const poor = scored.filter((x) => x.level === "凶" || x.level === "不佳");
     out.push({
       title: "四、哪十年最得劲",
       text: `大运是${b.luck.direction}的，${b.luck.startAgeText}起运——也就是说从 ${b.luck.startAge} 岁起，每十年换一步、一步管十年。` + (good.length ? `这十步里最得劲的是 ${good.map((x) => `${x.startAge}到${x.startAge + 9}岁（${x.name}运）`).join("、")}，该出手就出手，买房、成家、立业都往这几段里安排。` : "这十步里没有特别旺的，属于稳扎稳打型：不容易大起大落，但也难一步登天，把节奏放稳反而走得远。") + (poor.length ? `相对卡壳的是 ${poor.map((x) => `${x.startAge}到${x.startAge + 9}岁`).join("、")}，这几段别冒进、别做大额投入、别做重大决定。` : "十步里也没有特别凶的段落，一路算平顺。") + "上面那条时间轴就是这十步，颜色越绿越顺、越红越涩。"
     });
+    const rels = b.relations || [];
+    out.push({
+      title: "五、命里的刑冲合害",
+      text: (rels.length ? "八字不只看有几个字，还要看字跟字之间的关系。你这张盘有这几处：" + rels.map((x) => `${x.text}——${x.note}。`).join("") + "这些关系会改变五行的实际力量。上面那个「五行分布」是原始清点，而这个工具判强弱喜忌、算大运吉凶时，用的是计入这些关系之后的力量——所以同一张大运，有没有这层关系，结论可能差很远。" : "你这张盘地支之间没有明显的刑冲合害，八个字各安其位，属于结构比较清爽的盘。") + "要提醒的是：合化成不成、冲是凶是吉，传统上各家看法不一，这里是按较通行的取法处理。"
+    });
     const dayNayin = b.pillars[2].nayin;
     out.push({
-      title: "五、几个小细节",
+      title: "六、几个小细节",
       text: `你属${b.zodiac}。日柱纳音是「${dayNayin}」——纳音是古人另一套叫法，看着玩就行，不必当真。日柱这一旬的空亡在${b.xunKong.join("、")}（年柱的空亡另在${(b.xunKongYear || []).join("、")}）。空亡的意思是这两个字的力量打了折，落在哪一柱，那一柱代表的关系就松一些，不是坏事，是提醒你别在那上面较真。最后说句实在话：八字看的是「底子」，底子只决定你起手的牌，怎么打还得看你自己。想听人生走向、财运官运、什么时候转运，去「命理解读」那一栏看，那是专门讲这个的。`
     });
     return out;
@@ -4416,6 +4720,15 @@ body::before {
     });
     parts.push("</div>");
     if (r.luck) {
+      if (r.relations && r.relations.length) {
+        parts.push(secTitle("地支关系（刑冲合害）"));
+        parts.push('<ul class="rel-list">');
+        r.relations.forEach((x) => {
+          parts.push(`<li><b>${esc(x.type)}</b><span class="rel-text">${esc(x.text)}</span><i>${esc(x.note)}</i></li>`);
+        });
+        parts.push("</ul>");
+        parts.push('<p class="rel-note">这些关系会改变五行的实际力量：上面的分布是「八个字里各有多少」，判强弱喜忌时用的是计入这些关系之后的力量。</p>');
+      }
       parts.push(secTitle(`大运 · ${r.luck.direction}`));
       parts.push(`<div class="meta-bar" style="border-bottom:none;padding:0 0 8px">
       ${chip("起运", r.luck.startAgeText)}

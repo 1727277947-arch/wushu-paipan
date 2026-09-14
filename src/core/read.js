@@ -172,7 +172,7 @@ export function readBazi(b) {
   });
 
   // 四、大运
-  const scored = b.luck.pillars.map((lp) => ({ ...lp, level: scorePillarForLuck(lp, dm, scores).level }));
+  const scored = b.luck.pillars.map((lp) => ({ ...lp, level: scorePillarForLuck(lp, dm, scores, b.pillars).level }));
   const good = scored.filter((x) => x.level === '大吉' || x.level === '吉');
   const poor = scored.filter((x) => x.level === '凶' || x.level === '不佳');
   out.push({
@@ -188,10 +188,24 @@ export function readBazi(b) {
       + '上面那条时间轴就是这十步，颜色越绿越顺、越红越涩。',
   });
 
-  // 五、几个细节
+  // 刑冲合害
+  const rels = b.relations || [];
+  out.push({
+    title: '五、命里的刑冲合害',
+    text: (rels.length
+      ? '八字不只看有几个字，还要看字跟字之间的关系。你这张盘有这几处：'
+        + rels.map((x) => `${x.text}——${x.note}。`).join('')
+        + '这些关系会改变五行的实际力量。上面那个「五行分布」是原始清点，'
+        + '而这个工具判强弱喜忌、算大运吉凶时，用的是计入这些关系之后的力量——'
+        + '所以同一张大运，有没有这层关系，结论可能差很远。'
+      : '你这张盘地支之间没有明显的刑冲合害，八个字各安其位，属于结构比较清爽的盘。')
+      + '要提醒的是：合化成不成、冲是凶是吉，传统上各家看法不一，这里是按较通行的取法处理。',
+  });
+
+  // 六、几个细节
   const dayNayin = b.pillars[2].nayin;
   out.push({
-    title: '五、几个小细节',
+    title: '六、几个小细节',
     text:
       `你属${b.zodiac}。日柱纳音是「${dayNayin}」——纳音是古人另一套叫法，看着玩就行，不必当真。`
       + `日柱这一旬的空亡在${b.xunKong.join('、')}（年柱的空亡另在${(b.xunKongYear || []).join('、')}）。空亡的意思是这两个字的力量打了折，`

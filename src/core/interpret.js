@@ -10,6 +10,7 @@
  */
 
 import { STEMS, BRANCHES, STEM_WUXING, STEM_YANG, BRANCH_WUXING, BRANCH_HIDDEN_STEMS } from './lunar.js';
+import { isChong, he6Of, isHai, SANHE } from './relations.js';
 
 const GENERATES = { 木: '火', 火: '土', 土: '金', 金: '水', 水: '木' };
 const CONTROLS = { 木: '土', 土: '水', 水: '火', 火: '金', 金: '木' };
@@ -72,6 +73,9 @@ const GOD_PLAIN = {
   官杀: '位置和压力（名分、职位、约束、责任）',
   印: '学问和靠山（知识、名声、贵人、长辈）',
 };
+
+const SHENG_WX = { 木: '火', 火: '土', 土: '金', 金: '水', 水: '木' };
+const LABEL4 = ['年', '月', '日', '时'];
 
 const REL_TO_GROUP = {
   同类: '比劫',
@@ -164,7 +168,7 @@ function judgeLifeType(pillars, dayMaster, scores) {
 }
 
 /** 单柱（大运或流年）对命局的吉凶评分 */
-function scorePillarForLuck(pillar, dayMaster, scores) {
+function scorePillarForLuck(pillar, dayMaster, scores, natalPillars) {
   // 兼容 {name:'甲子'} 与 {stem:'甲',branch:'子'} 两种传参
   const stem = pillar.stem ?? (pillar.name ? pillar.name[0] : '');
   const branch = pillar.branch ?? (pillar.name ? pillar.name[1] : '');
@@ -195,6 +199,49 @@ function scorePillarForLuck(pillar, dayMaster, scores) {
   }, 0);
   score += hiddenScore;
 
+  // ── 与命局地支的刑冲合害 ──
+  // 大运/流年这一个字，落进命局后会被合、被冲，它本身的力量和性质都会变。
+  // 例如「乙巳」的巳若与命局申六合、与丑半合，火会被合去化金，未必还是帮身之火。
+  if (natalPillars && natalPillars.length === 4) {
+    const natalBranches = natalPillars.map((x) => x.branch);
+    const monthEl = BRANCH_WUXING[natalBranches[1]];
+    const natalEls = natalPillars.map((x) => STEM_WUXING[x.stem]);
+    const canTransform = (el) => monthEl === el || SHENG_WX[monthEl] === el || natalEls.includes(el);
+
+    natalBranches.forEach((nb, i) => {
+      if (isChong(branch, nb)) {
+        score -= 0.45;
+        reasons.push(`${branch}冲命局${LABEL4[i]}支${nb}（主变动）`);
+      }
+      const he = he6Of(branch, nb);
+      if (he) {
+        if (canTransform(he)) {
+          if (favorable.has(he)) { score += 0.6; reasons.push(`${branch}与${LABEL4[i]}支${nb}合化${he}（喜）`); }
+          else if (unfavorable.has(he)) { score -= 0.55; reasons.push(`${branch}与${LABEL4[i]}支${nb}合化${he}（忌）`); }
+        } else {
+          score -= 0.15;
+          reasons.push(`${branch}与${LABEL4[i]}支${nb}相合（牵绊）`);
+        }
+      }
+      if (isHai(branch, nb)) {
+        score -= 0.15;
+        reasons.push(`${branch}与${LABEL4[i]}支${nb}相害`);
+      }
+    });
+
+    SANHE.forEach((g) => {
+      if (!g.branches.includes(branch)) return;
+      const all = new Set([...natalBranches, branch]);
+      const have = g.branches.filter((b) => all.has(b));
+      const full = have.length === 3;
+      const half = have.length === 2 && have.includes(g.wang);
+      if (!full && !half) return;
+      const w = full ? 0.8 : 0.5;
+      if (favorable.has(g.element)) { score += w; reasons.push(`${have.join('')}${full ? '三合' : '半合'}${g.element}局（喜）`); }
+      else if (unfavorable.has(g.element)) { score -= w; reasons.push(`${have.join('')}${full ? '三合' : '半合'}${g.element}局（忌）`); }
+    });
+  }
+
   // 十神倾向加成
   const godOf = (el) => REL_TO_GROUP[relationToDayMaster(dayEl, el)];
   const stemGod = godOf(stemEl);
@@ -205,7 +252,10 @@ function scorePillarForLuck(pillar, dayMaster, scores) {
     stemGod,
     branchGod,
     reasons,
-    level: score >= 1.5 ? '大吉' : score >= 0.6 ? '吉' : score > -0.6 ? '平' : score > -1.5 ? '不佳' : '凶',
+    // 分档阈值：喜神两类、忌神三类，若不把「平」的区间放宽，
+    // 结果会系统性偏悲观（多数大运被打成凶），与「大多数十年本就平常」的
+    // 传统看法不符。此处按 吉:平:凶 ≈ 2:5:3 校准，属量化近似。
+    level: score >= 1.5 ? '大吉' : score >= 0.75 ? '吉' : score > -0.9 ? '平' : score > -1.9 ? '不佳' : '凶',
   };
 }
 
@@ -215,7 +265,7 @@ function findTurningPoints(analysis, currentYear, horizons = 10) {
   const points = [];
 
   luck.pillars.forEach((lp) => {
-    const s = scorePillarForLuck(lp, dayMaster, analysis.type.scores);
+    const s = scorePillarForLuck(lp, dayMaster, analysis.type.scores, analysis.pillars);
     lp.score = s.score;
     lp.level = s.level;
     lp.reasons = s.reasons;
@@ -248,7 +298,7 @@ function findTurningPoints(analysis, currentYear, horizons = 10) {
     const gzIdx = ((y - 1984) % 60 + 60) % 60;
     const stem = STEMS[gzIdx % 10];
     const branch = BRANCHES[gzIdx % 12];
-    const s = scorePillarForLuck({ stem, branch }, dayMaster, analysis.type.scores);
+    const s = scorePillarForLuck({ stem, branch }, dayMaster, analysis.type.scores, analysis.pillars);
     yearScores.push({ year: y, stem, branch, name: stem + branch, ...s });
   }
   const ranked = yearScores.slice().sort((a, b) => b.score - a.score);

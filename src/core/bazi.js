@@ -8,6 +8,7 @@ import {
   BRANCH_ZODIAC, solarTermsOfYear, dayPillarIndex, hourBranchIndex,
   jiaziName, xunKong, nayin, ganzhiOf,
 } from './lunar.js';
+import { relationEffects } from './relations.js';
 
 /** 五行生克关系 */
 const GENERATES = { 木: '火', 火: '土', 土: '金', 金: '水', 水: '木' };
@@ -180,20 +181,25 @@ function computeLuck(gender, curJD, year, yearStem, monthJiaziIdx) {
 }
 
 /** 五行力量统计（含藏干加权） */
-function wuxingStats(pillars) {
+function wuxingStats(pillars, branchMult, stemMult, bonus) {
   const stats = { 木: 0, 火: 0, 土: 0, 金: 0, 水: 0 };
   const weights = [0.9, 1.2, 1.4, 1.0];
   pillars.forEach((p, i) => {
     const w = weights[i] ?? 1;
+    const bm = branchMult ? branchMult[i] : 1;   // 刑冲合害对地支的折损
+    const sm = stemMult ? stemMult[i] : 1;       // 天干合冲的折损
     const stem = p.name[0];
     const branch = p.name[1];
-    stats[STEM_WUXING[stem]] += w;
+    stats[STEM_WUXING[stem]] += w * sm;
     const hidden = BRANCH_HIDDEN_STEMS[branch];
     const hw = [0.6, 0.3, 0.1];
     hidden.forEach((h, k) => {
-      stats[STEM_WUXING[h]] += w * (hw[k] ?? 0.1);
+      stats[STEM_WUXING[h]] += w * (hw[k] ?? 0.1) * bm;
     });
   });
+  if (bonus) {
+    Object.entries(bonus).forEach(([el, v]) => { stats[el] += v; });
+  }
   const total = Object.values(stats).reduce((a, b) => a + b, 0);
   const percent = {};
   Object.keys(stats).forEach((k) => {
@@ -249,13 +255,15 @@ export function computeBazi({ year, month, day, hour, minute, gender = '男', la
   });
 
   const luck = computeLuck(gender, curJD, year, yp.name[0], mp.index);
-  const wuxing = wuxingStats(pillarList);
+  const wuxing = wuxingStats(detail);                           // 原始：八个字里各五行各有多少
+  const effects = relationEffects(detail);                       // 刑冲合害（需带 branch/stem 字段）
+  const wuxingEffective = wuxingStats(detail, effects.branchMult, effects.stemMult, effects.bonus);
 
   const me = STEM_WUXING[dayStem];
   const supportElements = [me, Object.keys(GENERATES).find((k) => GENERATES[k] === me)];
   let support = 0;
   let drain = 0;
-  Object.entries(wuxing.raw).forEach(([el, v]) => {
+  Object.entries(wuxingEffective.raw).forEach(([el, v]) => {   // 判强弱用计入冲合后的力量
     if (supportElements.includes(el)) support += v;
     else drain += v;
   });
@@ -295,6 +303,8 @@ export function computeBazi({ year, month, day, hour, minute, gender = '男', la
     dayMaster,
     luck,
     wuxing,
+    wuxingEffective,
+    relations: effects.list,
     zodiac: BRANCH_ZODIAC[detail[0].branch],
     xunKong: detail[2].xunKong,        // 日柱旬空，命理常说的「空亡」即指此
     xunKongYear: detail[0].xunKong,    // 年柱旬空，另列备查
